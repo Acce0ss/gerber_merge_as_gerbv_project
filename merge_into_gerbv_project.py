@@ -5,7 +5,11 @@
 #        3. <panel-columns>
 #        4. <panel-x-offset>
 #        5. <panel-y-offset>
-         
+#        6. <pos-low-left-x>
+#        7. <pos-low-left-y>
+#        8. <board-pos-x>
+#        9. <board-pos-y>
+
 import sys
 import random
 
@@ -16,8 +20,17 @@ base_dir = Path(sys.argv[1])
 panel_rows = int(sys.argv[2])
 panel_cols = int(sys.argv[3])
 
-offset_x = int(sys.argv[4])
-offset_y = int(sys.argv[5])
+panel_offset_x = float(sys.argv[4])
+panel_offset_y = float(sys.argv[5])
+
+pos_low_left_x = float(sys.argv[6])
+pos_low_left_y = float(sys.argv[7])
+
+board_pos_x = float(sys.argv[8])
+board_pos_y = float(sys.argv[9])
+
+all_offset_x = -board_pos_x+pos_low_left_x
+all_offset_y = -board_pos_y+pos_low_left_y
 
 MM_to_INCH = 0.0393700787; #from google
 
@@ -33,8 +46,8 @@ def visibility_setting(visible):
         + ")\n"
 
 def translation_setting(row,col):
-    x = row*offset_x
-    y = col*offset_y
+    x = row*panel_offset_x + all_offset_x
+    y = col*panel_offset_y + all_offset_y
     return "\t(cons 'translate #(" \
         + str(x*MM_to_INCH) + " " + str(y*MM_to_INCH) \
         + "))\n"
@@ -42,15 +55,15 @@ def translation_setting(row,col):
 def layer_definition(filename, row, col, ordnum):
     return "(define-layer! " + str(ordnum) \
         + " (cons 'filename \"" + filename + "\")\n" \
-        + visibility_setting(True) \
+        + visibility_setting(False) \
         + random_color_setting() \
         + translation_setting(row, col) \
         + ")\n"
-
-project_file = open(base_dir.parts[0] \
-                    + "/" + base_dir.parts[0] \
-                    + ".gvp", "w")
-
+project_filename = str(base_dir.absolute()) \
+                    + "/" + base_dir.parts[-1] \
+                    + ".gvp"
+project_file = open(project_filename, "w")
+print(project_filename)
 layers_of_all_boards = panel_cols*panel_rows*len(list(base_dir.iterdir()))
 
 current_layer_num = layers_of_all_boards
